@@ -16,11 +16,13 @@ function Home() {
     useEffect(() => {
         async function verifyCookie() {
             if (!cookies.token) {
+                console.log(cookies.token);
                 navigate('/login');
             } else {
                 const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`,
                 {},
                 {withCredentials: true});
+                console.log(data);
                 if (data.success === true) {
                     setUsername(data.username.split('@')[0]);
                     setShowNotes(true);
