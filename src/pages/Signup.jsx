@@ -34,7 +34,7 @@ function Signup() {
             toast.success("Signed Up!", {
                 position: "bottom-right",
             });          
-            navigate('/');
+            navigate('/notes');
         } else {
             toast.error("Error signing you up!", {
                 position: "bottom-right",
