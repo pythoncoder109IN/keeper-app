@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, TextField, createTheme } from "@mui/material";
 import style from "./pages.module.css"
@@ -7,6 +7,7 @@ import LoginIcon from '@mui/icons-material/Login';
 import { ThemeProvider } from "@emotion/react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useCookies } from 'react-cookie';
 
 const theme = createTheme({
     palette: {
@@ -23,6 +24,16 @@ function Login() {
     const emailRef = useRef();
     const passwordRef = useRef();
     const navigate = useNavigate();
+    const cookies = useCookies(['token']);
+    useEffect(() => {
+        async function verifyCookie() {
+            if (cookies.token) {
+                navigate('/');
+            }
+        }
+        verifyCookie();
+    },[cookies, navigate]);
+
 
     async function handleSubmit(e) {
         e.preventDefault();
