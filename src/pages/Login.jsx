@@ -28,7 +28,7 @@ function Login() {
     useEffect(() => {
         async function verifyCookie() {
             if (cookies.token) {
-                navigate('/');
+                navigate('/notes');
             }
         }
         verifyCookie();
@@ -45,7 +45,7 @@ function Login() {
             toast.success("Logged In!", {
                 position: "bottom-right",
             });          
-            navigate('/');
+            navigate('/notes');
         } else {
             toast.error("Incorrect email or password!", {
                 position: "bottom-right",
