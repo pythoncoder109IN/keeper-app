@@ -43,7 +43,7 @@ function Signup() {
     }
 
     function login() {
-        navigate('/login');
+        navigate('/');
     }
 
     return (
