@@ -14,21 +14,33 @@ function Home() {
     const [username, setUsername] = useState('');
 
     useEffect(() => {
-        async function verifyCookie() {
-            const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`,
-            {},
-            {withCredentials: true});
-            console.log(data);
-            if (data.success === true) {
-                setUsername(data.username.split('@')[0]);
-                setShowNotes(true);
-            } else {
-                removeCookie('token');
-                navigate('/login');
-            }
+        if (cookies && cookies.token) {
+            setCookiesReady(true);
+        } else {
+            setCookiesReady(false);
         }
-        verifyCookie();
-    }, [cookies.token, removeCookie, navigate]);
+    }, [cookies]);
+
+    useEffect(() => {
+        if (cookiesReady) {
+            async function verifyCookie() {
+                try {
+                    const { data } = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`, {}, { withCredentials: true });
+                    if (data.success === true) {
+                        setUsername(data.username.split('@')[0]);
+                        setShowNotes(true);
+                    } else {
+                        removeCookie('token');
+                        navigate('/login');
+                    }
+                } catch (error) {
+                    console.log('Error verifying cookie:', error);
+                    navigate('/login'); // Handle error by navigating to login page
+                }
+            }
+            verifyCookie();
+        }
+    }, [cookiesReady, removeCookie]);
 
     function logout() {
         setShowNotes(false);
