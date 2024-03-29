@@ -15,9 +15,6 @@ function Home() {
 
     useEffect(() => {
         async function verifyCookie() {
-            if (!cookies.token) {
-                navigate('/login');
-            }
             const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`,
             {},
             {withCredentials: true});
