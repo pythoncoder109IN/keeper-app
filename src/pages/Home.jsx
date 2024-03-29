@@ -10,38 +10,28 @@ import style from './pages.module.css'
 function Home() {
     const navigate = useNavigate();
     const [cookies, removeCookie] = useCookies(['token']);
-    const [cookiesReady, setCookiesReady] = useState(false);
     const [showNotes, setShowNotes] = useState(false);
     const [username, setUsername] = useState('');
 
     useEffect(() => {
-        if (cookies && cookies.token) {
-            setCookiesReady(true);
-        } else {
-            setCookiesReady(false);
-        }
-    }, [cookies]);
-
-    useEffect(() => {
-        if (cookiesReady) {
-            async function verifyCookie() {
-                try {
-                    const { data } = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`, {}, { withCredentials: true });
-                    if (data.success === true) {
-                        setUsername(data.username.split('@')[0]);
-                        setShowNotes(true);
-                    } else {
-                        removeCookie('token');
-                        navigate('/login');
-                    }
-                } catch (error) {
-                    console.log('Error verifying cookie:', error);
-                    navigate('/login'); // Handle error by navigating to login page
+        async function verifyCookie() {
+            if (!cookies.token) {
+                navigate('/login');
+            } else {
+                const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`,
+                {},
+                {withCredentials: true});
+                if (data.success === true) {
+                    setUsername(data.username.split('@')[0]);
+                    setShowNotes(true);
+                } else {
+                    removeCookie('token');
+                    navigate('/login');
                 }
             }
-            verifyCookie();
         }
-    }, [cookiesReady, removeCookie]);
+        verifyCookie();
+    }, [cookies.token, removeCookie, navigate]);
 
     function logout() {
         setShowNotes(false);
