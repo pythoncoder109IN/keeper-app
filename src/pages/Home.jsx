@@ -17,17 +17,16 @@ function Home() {
         async function verifyCookie() {
             if (!cookies.token) {
                 navigate('/login');
+            }
+            const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`,
+            {},
+            {withCredentials: true});
+            if (data.success === true) {
+                setUsername(data.username.split('@')[0]);
+                setShowNotes(true);
             } else {
-                const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`,
-                {},
-                {withCredentials: true});
-                if (data.success === true) {
-                    setUsername(data.username.split('@')[0]);
-                    setShowNotes(true);
-                } else {
-                    removeCookie('token');
-                    navigate('/');
-                }
+                removeCookie('token');
+                navigate('/');
             }
         }
         verifyCookie();
