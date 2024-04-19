@@ -16,7 +16,7 @@ function Home() {
     useEffect(() => {
         async function verifyCookie() {
             if (!cookies.token) {
-                navigate('/');
+                navigate('/login');
             } else {
                 const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`,
                 {},
@@ -36,7 +36,7 @@ function Home() {
     function logout() {
         setShowNotes(false);
         removeCookie('token');
-        navigate('/');
+        navigate('/login');
     }
 
     return (
