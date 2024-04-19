@@ -30,7 +30,7 @@ function Home() {
             }
         }
         verifyCookie();
-    }, [cookies.token, removeCookie, navigate]);
+    }, [cookies.token, navigate]);
 
     function logout() {
         setShowNotes(false);
