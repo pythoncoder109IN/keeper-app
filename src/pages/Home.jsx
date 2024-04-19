@@ -26,7 +26,6 @@ function Home() {
                 setUsername(data.username.split('@')[0]);
                 setShowNotes(true);
             } else {
-                removeCookie('token');
                 navigate('/');
             }
         }
