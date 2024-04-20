@@ -9,34 +9,34 @@ import style from './pages.module.css'
 
 function Home() {
     const navigate = useNavigate();
-    const [cookies, removeCookie] = useCookies(["token"]);
+    const [cookies, removeCookie] = useCookies(['token']);
     const [showNotes, setShowNotes] = useState(false);
     const [username, setUsername] = useState('');
 
     useEffect(() => {
         async function verifyCookie() {
-            // console.log(cookies);
-            // if (!cookies.token) {
-            //     console.log('cookie',cookies.token);
-            //     navigate('/login');
-            // }
-            const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`,
-            {},
-            {withCredentials: true});
-            console.log(data);
-            if (data.success === true) {
-                setUsername(data.username.split('@')[0]);
-                setShowNotes(true);
-            } else {
+            if (!cookies.token) {
                 navigate('/login');
+                return;
+            } else {
+                const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`,
+                {},
+                {withCredentials: true});
+                if (data.success === true) {
+                    setUsername(data.username.split('@')[0]);
+                    setShowNotes(true);
+                } else {
+                    removeCookie('token');
+                    navigate('/');
+                }
             }
         }
         verifyCookie();
-    }, [cookies.token, navigate]);
+    }, [cookies.token, removeCookie, navigate]);
 
     function logout() {
         setShowNotes(false);
-        removeCookie("token");
+        removeCookie('token');
         navigate('/login');
     }
 
