@@ -15,6 +15,7 @@ function Home() {
 
     useEffect(() => {
         async function verifyCookie() {
+            console.log(cookies);
             if (!cookies.token) {
                 navigate('/login');
                 return;
