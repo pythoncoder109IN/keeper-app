@@ -15,11 +15,11 @@ function Home() {
 
     useEffect(() => {
         async function verifyCookie() {
-            console.log(cookies);
-            if (!cookies.token) {
-                console.log('cookie',cookies.token);
-                navigate('/login');
-            }
+            // console.log(cookies);
+            // if (!cookies.token) {
+            //     console.log('cookie',cookies.token);
+            //     navigate('/login');
+            // }
             const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`,
             {},
             {withCredentials: true});
@@ -28,7 +28,7 @@ function Home() {
                 setUsername(data.username.split('@')[0]);
                 setShowNotes(true);
             } else {
-                navigate('/');
+                navigate('/login');
             }
         }
         verifyCookie();
