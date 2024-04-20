@@ -19,19 +19,18 @@ function Home() {
             if (!cookies.token) {
                 navigate('/login');
                 return;
+            }
+            const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`,
+            {},
+            {withCredentials: true});
+            console.log(data.token);
+            setCookie('token', data.token, {path: '/'});
+            if (data.success === true) {
+                setUsername(data.username.split('@')[0]);
+                setShowNotes(true);
             } else {
-                const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`,
-                {},
-                {withCredentials: true});
-                console.log(data.token);
-                setCookie('token', data.token, {path: '/'});
-                if (data.success === true) {
-                    setUsername(data.username.split('@')[0]);
-                    setShowNotes(true);
-                } else {
-                    removeCookie('token');
-                    navigate('/');
-                }
+                removeCookie('token');
+                navigate('/');
             }
         }
         verifyCookie();
