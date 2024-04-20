@@ -18,7 +18,6 @@ function Home() {
             console.log(cookies);
             if (!cookies.token) {
                 navigate('/login');
-                return;
             }
             const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`,
             {},
