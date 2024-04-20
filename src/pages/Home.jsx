@@ -9,13 +9,12 @@ import style from './pages.module.css'
 
 function Home() {
     const navigate = useNavigate();
-    const [cookies, removeCookie] = useCookies([]);
+    const [cookies, setCookie, removeCookie] = useCookies([]);
     const [showNotes, setShowNotes] = useState(false);
     const [username, setUsername] = useState('');
 
     useEffect(() => {
         async function verifyCookie() {
-            console.log(cookies);
             if (!cookies.token) {
                 navigate('/login');
                 return;
@@ -23,6 +22,7 @@ function Home() {
                 const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`,
                 {},
                 {withCredentials: true});
+                setCookie('token', data.token, path: '/');
                 if (data.success === true) {
                     setUsername(data.username.split('@')[0]);
                     setShowNotes(true);
