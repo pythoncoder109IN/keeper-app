@@ -9,7 +9,7 @@ import style from './pages.module.css'
 
 function Home() {
     const navigate = useNavigate();
-    const [cookies, removeCookie] = useCookies(['token']);
+    const [cookies, removeCookie] = useCookies([]);
     const [showNotes, setShowNotes] = useState(false);
     const [username, setUsername] = useState('');
 
