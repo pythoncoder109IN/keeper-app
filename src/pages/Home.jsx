@@ -15,6 +15,7 @@ function Home() {
 
     useEffect(() => {
         async function verifyCookie() {
+            console.log(cookies);
             if (!cookies.token) {
                 navigate('/login');
                 return;
@@ -22,6 +23,7 @@ function Home() {
                 const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`,
                 {},
                 {withCredentials: true});
+                console.log(data.token);
                 setCookie('token', data.token, {path: '/'});
                 if (data.success === true) {
                     setUsername(data.username.split('@')[0]);
