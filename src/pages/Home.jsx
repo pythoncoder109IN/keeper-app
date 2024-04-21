@@ -15,19 +15,35 @@ function Home() {
 
   useEffect(() => {
     async function verifyUser() {
-      const { data } = await axios.post(
-        `${import.meta.env.VITE_SERVER_API}/verify`,
-        {},
-        { withCredentials: true }
-      );
-      if (data.success === true) {
-        setUsername(data.username.split("@")[0]);
-        setShowNotes(true);
-      } else {
-        navigate("/login");
+      const tokenCookie = document.cookie
+        .split(';')
+        .find(cookie => cookie.trim().startsWith('token='));
+    
+      if (!tokenCookie) {
+        navigate('/login');
+        return;
       }
-    }
-    verifyUser();
+    
+      try {
+        const { data } = await axios.post(
+          `${import.meta.env.VITE_SERVER_API}/verify`,
+          {},
+          { withCredentials: true }
+        );
+        
+        if (data.success === true) {
+          setUsername(data.username.split("@")[0]);
+          setShowNotes(true);
+        } else {
+          navigate("/login");
+        }
+      } catch (error) {
+        console.error('Error verifying user:', error);
+        navigate('/login');
+      }
+  }
+  
+  verifyUser();
   }, [navigate]);
 
   function logout() {
