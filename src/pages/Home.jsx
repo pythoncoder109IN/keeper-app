@@ -17,17 +17,20 @@ function Home() {
     async function verifyUser() {
       try {
         const token = localStorage.getItem("token");
-        console.log(token);
         if (!token) {
           navigate("/login");
           return;
         }
-
+    
         const { data } = await axios.post(
           `${import.meta.env.VITE_SERVER_API}/verify`,
-          { token }
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
-        console.log(data);
         if (data.success === true) {
           setUsername(data.username.split("@")[0]);
           setShowNotes(true);
