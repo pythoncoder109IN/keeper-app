@@ -37,10 +37,11 @@ function Signup() {
             );
 
             if (data.success === true) {
+                localStorage.setItem("token", data.token);
                 toast.success("Signed Up!", {
                     position: "bottom-right",
                 });          
-                navigate('/login');
+                navigate('/');
             } else {
                 toast.error("Error signing you up!", {
                     position: "bottom-right",
