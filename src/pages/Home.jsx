@@ -1,55 +1,67 @@
-import { useEffect, useState } from 'react';
-import { useCookies } from 'react-cookie';
-import {useNavigate} from 'react-router-dom';
-import axios from 'axios';
-import NoteArea from './Note';
-import Button from '@mui/material/Button';
-import LogoutIcon from '@mui/icons-material/Logout';
-import style from './pages.module.css'
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import NoteArea from "./Note";
+import Button from "@mui/material/Button";
+import LogoutIcon from "@mui/icons-material/Logout";
+import style from "./pages.module.css";
+import Backdrop from "@mui/material/Backdrop";
+import CircularProgress from "@mui/material/CircularProgress";
 
 function Home() {
-    const navigate = useNavigate();
-    const [cookies, setCookie, removeCookie] = useCookies([]);
-    const [showNotes, setShowNotes] = useState(false);
-    const [username, setUsername] = useState('');
+  const navigate = useNavigate();
+  const [showNotes, setShowNotes] = useState(false);
+  const [username, setUsername] = useState("");
 
-    useEffect(() => {
-        async function verifyCookie() {
-            console.log(cookies);
-            if (!cookies.token) {
-                navigate('/login');
-            }
-            const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/verify`,
-            {},
-            {withCredentials: true});
-            console.log(data.token);
-            setCookie('token', data.token, {path: '/'});
-            if (data.success === true) {
-                setUsername(data.username.split('@')[0]);
-                setShowNotes(true);
-            } else {
-                removeCookie('token');
-                navigate('/');
-            }
-        }
-        verifyCookie();
-    }, [cookies.token, removeCookie, navigate]);
-
-    function logout() {
-        setShowNotes(false);
-        removeCookie('token');
-        navigate('/login');
+  useEffect(() => {
+    async function verifyUser() {
+      const { data } = await axios.post(
+        `${import.meta.env.VITE_SERVER_API}/verify`,
+        {},
+        { withCredentials: true }
+      );
+      if (data.success === true) {
+        setUsername(data.username.split("@")[0]);
+        setShowNotes(true);
+      } else {
+        navigate("/login");
+      }
     }
+    verifyUser();
+  }, [navigate]);
 
-    return (
-        <div>
-            <div className={style.user}>
-                {username && <p className={style.welcome}>Welcome, {username}</p>}
-                <Button variant="outlined" startIcon={<LogoutIcon />} onClick={logout} className={style.btn}>Logout</Button>
-            </div>
-            {showNotes && <NoteArea />}
-        </div>
-    )
+  function logout() {
+    setShowNotes(false);
+    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    navigate("/login");
+  }
+
+  return (
+    <div>
+      {!showNotes && (
+        <Backdrop
+          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={showNotes}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>
+      )}
+      <div className={style.user}>
+        {username && <p className={style.welcome}>Welcome, {username}</p>}
+        {showNotes && (
+          <Button
+            variant="outlined"
+            startIcon={<LogoutIcon />}
+            onClick={logout}
+            className={style.btn}
+          >
+            Logout
+          </Button>
+        )}
+      </div>
+      {showNotes && <NoteArea />}
+    </div>
+  );
 }
 
-export default Home
+export default Home;
