@@ -27,7 +27,7 @@ function Home() {
           `${import.meta.env.VITE_SERVER_API}/verify`,
           { token }
         );
-        console.log{data);
+        console.log(data);
         if (data.success === true) {
           setUsername(data.username.split("@")[0]);
           setShowNotes(true);
