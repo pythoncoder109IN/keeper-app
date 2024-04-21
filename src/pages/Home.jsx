@@ -28,7 +28,7 @@ function Home() {
       }
     }
     verifyUser();
-  }, [navigate]);
+  }, []);
 
   async function logout() {
     setShowNotes(false);
