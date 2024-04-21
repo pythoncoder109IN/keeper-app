@@ -15,26 +15,40 @@ function Home() {
 
   useEffect(() => {
     async function verifyUser() {
-      const { data } = await axios.post(
-        `${import.meta.env.VITE_SERVER_API}/verify`,
-        {},
-        { withCredentials: true }
-      );
-      if (data.success === true) {
-        setUsername(data.username.split("@")[0]);
-        setShowNotes(true);
-      } else {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          navigate("/login");
+          return;
+        }
+
+        const { data } = await axios.post(
+          `${import.meta.env.VITE_SERVER_API}/verify`,
+          { token }
+        );
+        if (data.success === true) {
+          setUsername(data.username.split("@")[0]);
+          setShowNotes(true);
+        } else {
+          navigate("/login");
+        }
+      } catch (error) {
+        console.error("Error verifying user:", error);
         navigate("/login");
       }
     }
     verifyUser();
-  }, []);
+  }, [navigate]);
 
   async function logout() {
-    setShowNotes(false);
-    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/logout`);
-    navigate("/login");
+    try {
+      setShowNotes(false);
+      localStorage.removeItem("token");
+      await axios.post(`${import.meta.env.VITE_SERVER_API}/logout`);
+      navigate("/login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
   }
 
   return (
@@ -55,8 +69,9 @@ function Home() {
             sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
             open={!showNotes}
           >
-          <CircularProgress color="inherit" />
-        </Backdrop>)}
+            <CircularProgress color="inherit" />
+          </Backdrop>
+        )}
       </div>
       {showNotes && <NoteArea />}
     </div>
