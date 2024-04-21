@@ -29,14 +29,27 @@ function Login() {
         const email = emailRef.current.value;
         const password = passwordRef.current.value;
         
-        const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/login`,{email, password},{withCredentials: true});
-        if (data.success === true) {
-            toast.success("Logged In!", {
-                position: "bottom-right",
-            });          
-            navigate('/');
-        } else {
-            toast.error("Incorrect email or password!", {
+        try {
+            const { data } = await axios.post(
+                `${import.meta.env.VITE_SERVER_API}/login`,
+                { email, password },
+                { withCredentials: true }
+            );
+
+            if (data.success === true) {
+                localStorage.setItem("token", data.token); // Save token to localStorage
+                toast.success("Logged In!", {
+                    position: "bottom-right",
+                });          
+                navigate('/');
+            } else {
+                toast.error("Incorrect email or password!", {
+                    position: "bottom-right",
+                });
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+            toast.error("Something went wrong!", {
                 position: "bottom-right",
             });
         }
@@ -62,4 +75,4 @@ function Login() {
     )
 }
 
-export default Login
+export default Login;
