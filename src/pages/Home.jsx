@@ -33,7 +33,7 @@ function Home() {
   async function logout() {
     setShowNotes(false);
     document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    const {data} = await axios.post`${import.meta.env.VITE_SERVER_API}/logout`,{}};
+    const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/logout`,{});
     console.log(data);
     navigate("/login");
   }
