@@ -38,17 +38,9 @@ function Home() {
 
   return (
     <div>
-      {!showNotes && (
-        <Backdrop
-          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-          open={showNotes}
-        >
-          <CircularProgress color="inherit" />
-        </Backdrop>
-      )}
       <div className={style.user}>
         {username && <p className={style.welcome}>Welcome, {username}</p>}
-        {showNotes && (
+        {showNotes ? (
           <Button
             variant="outlined"
             startIcon={<LogoutIcon />}
@@ -57,7 +49,12 @@ function Home() {
           >
             Logout
           </Button>
-        )}
+        ) : (<Backdrop
+          sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+          open={showNotes}
+        >
+          <CircularProgress color="inherit" />
+        </Backdrop>)}
       </div>
       {showNotes && <NoteArea />}
     </div>
