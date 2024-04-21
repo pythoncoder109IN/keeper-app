@@ -50,7 +50,7 @@ function Home() {
             Logout
           </Button>
         ) : (
-          console.log("backdrop activated");
+          {console.log("backdrop activated");}
           <Backdrop
           sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
           open={showNotes}
