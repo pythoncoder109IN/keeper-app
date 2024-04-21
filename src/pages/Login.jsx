@@ -51,8 +51,8 @@ function Login() {
             <div className={style.login}>
                 <form onSubmit={handleSubmit} className={style.form}>
                     <h1>Login</h1>
-                    <TextField color="yellow" type="email" inputRef={emailRef} label="Email" variant="outlined"/>
-                    <TextField color="yellow" type="password" inputRef={passwordRef} label="Password" variant="outlined"/>
+                    <TextField color="yellow" type="email" inputRef={emailRef} label="Email" variant="outlined" required/>
+                    <TextField color="yellow" type="password" inputRef={passwordRef} label="Password" variant="outlined" required/>
                     <Button color="yellow" variant="outlined" type="submit" startIcon={<LoginIcon />} className={style.loginBtn}>Login</Button>
                     <Button color="yellow" variant="contained" className={style.signupBtn} onClick={signup}>Signup</Button>
                 </form>
