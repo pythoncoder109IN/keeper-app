@@ -49,7 +49,6 @@ function Home() {
     try {
       setShowNotes(false);
       localStorage.removeItem("token");
-      await axios.post(`${import.meta.env.VITE_SERVER_API}/logout`);
       navigate("/login");
     } catch (error) {
       console.error("Error logging out:", error);
