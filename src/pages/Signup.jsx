@@ -28,15 +28,27 @@ function Signup() {
         e.preventDefault();
         const email = emailInputRef.current.value;
         const password = passwordInputRef.current.value;
-        console.log(email, password);
-        const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/signup`,{email, password},{withCredentials: true});
-        if (data.success === true) {
-            toast.success("Signed Up!", {
-                position: "bottom-right",
-            });          
-            navigate('/');
-        } else {
-            toast.error("Error signing you up!", {
+        
+        try {
+            const { data } = await axios.post(
+                `${import.meta.env.VITE_SERVER_API}/signup`,
+                { email, password },
+                { withCredentials: true }
+            );
+
+            if (data.success === true) {
+                toast.success("Signed Up!", {
+                    position: "bottom-right",
+                });          
+                navigate('/login');
+            } else {
+                toast.error("Error signing you up!", {
+                    position: "bottom-right",
+                });
+            }
+        } catch (error) {
+            console.error("Signup error:", error);
+            toast.error("Something went wrong!", {
                 position: "bottom-right",
             });
         }
@@ -62,4 +74,4 @@ function Signup() {
     )
 }
 
-export default Signup
+export default Signup;
