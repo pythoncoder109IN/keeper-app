@@ -3,8 +3,7 @@ import AddIcon from '@mui/icons-material/Add';
 import Fab from "@mui/material/Fab";
 import Zoom from "@mui/material/Zoom";
 import axios from "axios";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import toast, { Toaster } from 'react-hot-toast';
 
 function CreateArea(props) {
     const [isExpanded, setExpanded] = useState(false);
@@ -16,7 +15,8 @@ function CreateArea(props) {
         const title = titleRef.current.value;
         const content = contentRef.current.value;
         const {data} = await axios.post(`${import.meta.env.VITE_SERVER_API}/notes`,{title: title, content: content},{withCredentials: true});
-        console.log(data);
+        // console.log(data);
+        props.update()
         if (data.success === true) {
             toast.success("Note Created", {
                 position: "bottom-right",
@@ -26,7 +26,6 @@ function CreateArea(props) {
                 position: "bottom-right",
             });
         }
-        props.update();
         titleRef.current.value = '';
         contentRef.current.value = '';
     }
@@ -53,12 +52,12 @@ function CreateArea(props) {
                 />
             )}
             <Zoom in={isExpanded}>
-            <Fab onClick={submitNote}>
-                <AddIcon />
-            </Fab>
+                <Fab onClick={submitNote}>
+                    <AddIcon />
+                </Fab>
             </Zoom>
         </form>
-        <ToastContainer />
+        <Toaster/>
         </div>
     );
 }

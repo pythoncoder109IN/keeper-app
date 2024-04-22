@@ -6,8 +6,7 @@ import { Button } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import CircularProgress from '@mui/material/CircularProgress';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import toast, { Toaster } from 'react-hot-toast';
 
 function NoteArea () {
     const [notes, setNotes] = useState([]);
@@ -57,6 +56,7 @@ function NoteArea () {
 
     async function deleteHandler(id) {
         const {data} = await axios.delete(`${import.meta.env.VITE_SERVER_API}/notes/${id}`,{withCredentials: true});
+        setNoteUpdated(!noteUpdated);
         if (data.success === true) {
             toast.success("Note Deleted", {
                 position: "bottom-right",
@@ -66,14 +66,13 @@ function NoteArea () {
                 position: "bottom-right",
             });
         }
-        setNoteUpdated(!noteUpdated);
     }
 
     return (
         <div>
             <CreateArea update={update} />
             {loading ? (<CircularProgress />) :
-            (notes.map((note, index) => {
+            (notes.length === 0 ? (<p className='note'>Tap on the title to create an note.</p>) : notes.map((note, index) => {
                 return (
                     <div key={index} className='note'>
                         <h1>{note.title}</h1>
@@ -84,7 +83,7 @@ function NoteArea () {
                 )
             }))}
             {modalIsOpen && <CreateModal isOpen={modalIsOpen} note={updateData} closeModal={closeModal} showToast={showToast} />}
-            <ToastContainer />
+            <Toaster />
         </div>
     )
 }

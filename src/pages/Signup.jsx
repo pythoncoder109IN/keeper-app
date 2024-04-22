@@ -4,9 +4,8 @@ import axios from "axios";
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import LoginIcon from '@mui/icons-material/Login';
-import style from "./pages.module.css"
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import style from "./pages.module.css";
+import toast, { Toaster } from 'react-hot-toast';
 
 const theme = createTheme({
     palette: {
@@ -41,14 +40,16 @@ function Signup() {
                 toast.success("Signed Up!", {
                     position: "bottom-right",
                 });          
-                navigate('/');
+                setTimeout(() => {
+                    navigate('/');
+                }, 2000);
             } else {
                 toast.error("Error signing you up!", {
                     position: "bottom-right",
                 });
             }
         } catch (error) {
-            console.error("Signup error:", error);
+            console.log("Signup error:", error);
             toast.error("Something went wrong!", {
                 position: "bottom-right",
             });
@@ -70,7 +71,7 @@ function Signup() {
                     <Button color="yellow" variant="contained" className={style.signupBtn} onClick={login}>Login</Button>
                 </form>
             </div>
-            <ToastContainer />
+            <Toaster />
         </ThemeProvider>
     )
 }

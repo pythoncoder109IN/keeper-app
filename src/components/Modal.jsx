@@ -4,7 +4,6 @@ import Modal from 'react-modal';
 import CloseIcon from '@mui/icons-material/Close';
 import UpgradeIcon from '@mui/icons-material/Upgrade';
 import Fab from "@mui/material/Fab";
-import Zoom from "@mui/material/Zoom";
 
 const customStyles = {
   content: {
@@ -14,6 +13,7 @@ const customStyles = {
     bottom: 'auto',
     marginRight: '-50%',
     transform: 'translate(-50%, -50%)',
+    transition: 'transform 0.3s ease-in-out',
   },
 };
 
@@ -39,7 +39,7 @@ function CreateModal(props) {
             ariaHideApp={false}
         >
             <button onClick={closeModal} className='close-btn'><CloseIcon /></button>
-            <h3>Update Data:</h3>
+            <h1 className='update-heading'>Update Note:</h1>
             <form className='create-note'>
                 <input type="text" value={title} onChange={(e)=>{setTitle(e.target.value)}} />
                 <textarea type="text" value={content} onChange={(e)=>{setContent(e.target.value)}} />

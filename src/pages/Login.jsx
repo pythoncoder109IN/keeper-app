@@ -5,8 +5,7 @@ import { Button, TextField, createTheme } from "@mui/material";
 import style from "./pages.module.css"
 import LoginIcon from '@mui/icons-material/Login';
 import { ThemeProvider } from "@emotion/react";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import toast, { Toaster } from 'react-hot-toast';
 
 const theme = createTheme({
     palette: {
@@ -41,14 +40,16 @@ function Login() {
                 toast.success("Logged In!", {
                     position: "bottom-right",
                 });          
-                navigate('/');
+                setTimeout(() => {
+                    navigate('/');
+                }, 2000);
             } else {
                 toast.error("Incorrect email or password!", {
                     position: "bottom-right",
                 });
             }
         } catch (error) {
-            console.error("Login error:", error);
+            console.log("Login error:", error);
             toast.error("Something went wrong!", {
                 position: "bottom-right",
             });
@@ -69,7 +70,7 @@ function Login() {
                     <Button color="yellow" variant="outlined" type="submit" startIcon={<LoginIcon />} className={style.loginBtn}>Login</Button>
                     <Button color="yellow" variant="contained" className={style.signupBtn} onClick={signup}>Signup</Button>
                 </form>
-                <ToastContainer />
+                <Toaster />
             </div>
         </ThemeProvider>
     )
