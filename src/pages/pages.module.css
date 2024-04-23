@@ -9,7 +9,6 @@
     color: black;
 }
 .btn {
-    
     color: black !important;
     border-color: black !important;
 }
@@ -42,4 +41,21 @@
 
 .signupBtn {
     padding: 10px 20px !important;
+}
+
+@media screen and (max-width: 768px) {
+    .login {
+        margin: 10vh 9vw !important;
+    }
+    .form {
+        height: 60vh;
+    }
+    .user {
+        width: 40vw;
+        left: 50vw;
+        gap: 10px;
+    }
+    .btn {
+        font-size: 0rem !important;
+    }
 }
