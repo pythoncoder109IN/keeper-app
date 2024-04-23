@@ -125,4 +125,7 @@ form.create-note button {
     header{
         padding: 16px 16px;
     }
+    .modal-form {
+        margin: 5vh 5vw !important;
+    }
 }

@@ -32,15 +32,15 @@ function CreateModal(props) {
     }
 
     return (
-        <Modal
+          <Modal
             isOpen={isOpen}
             onRequestClose={closeModal}
             style={customStyles}
             ariaHideApp={false}
-        >
+          >
             <button onClick={closeModal} className='close-btn'><CloseIcon /></button>
             <h1 className='update-heading'>Update Note:</h1>
-            <form className='create-note'>
+            <form className='create-note modal-form'>
                 <input type="text" value={title} onChange={(e)=>{setTitle(e.target.value)}} />
                 <textarea type="text" value={content} onChange={(e)=>{setContent(e.target.value)}} />
                   <Fab onClick={submitHandler}>

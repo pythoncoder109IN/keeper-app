@@ -27,7 +27,7 @@ function Login() {
         e.preventDefault();
         const email = emailRef.current.value;
         const password = passwordRef.current.value;
-        
+        const toastId = toast.loading('Logging you in...');
         try {
             const { data } = await axios.post(
                 `${import.meta.env.VITE_SERVER_API}/login`,
@@ -35,14 +35,15 @@ function Login() {
                 { withCredentials: true }
             );
 
+            toast.dismiss(toastId);
             if (data.success === true) {
-                localStorage.setItem("token", data.token); // Save token to localStorage
+                localStorage.setItem("token", data.token);
                 toast.success("Logged In!", {
                     position: "bottom-right",
-                });          
-                setTimeout(() => {
+                });
+                setTimeout(() => {    
                     navigate('/');
-                }, 2000);
+                }, 1000);
             } else {
                 toast.error("Incorrect email or password!", {
                     position: "bottom-right",

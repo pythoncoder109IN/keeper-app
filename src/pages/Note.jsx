@@ -71,7 +71,7 @@ function NoteArea () {
     return (
         <div>
             <CreateArea update={update} />
-            {loading ? (<CircularProgress />) :
+            {loading ? (<CircularProgress color='inherit'/>) :
             (notes.length === 0 ? (<p className='note'>Tap on the title to create an note.</p>) : notes.map((note, index) => {
                 return (
                     <div key={index} className='note'>

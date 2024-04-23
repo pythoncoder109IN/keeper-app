@@ -27,7 +27,7 @@ function Signup() {
         e.preventDefault();
         const email = emailInputRef.current.value;
         const password = passwordInputRef.current.value;
-        
+        const toastId = toast.loading('Signing you up...');
         try {
             const { data } = await axios.post(
                 `${import.meta.env.VITE_SERVER_API}/signup`,
@@ -35,14 +35,15 @@ function Signup() {
                 { withCredentials: true }
             );
 
+            toast.dismiss(toastId);
             if (data.success === true) {
                 localStorage.setItem("token", data.token);
                 toast.success("Signed Up!", {
                     position: "bottom-right",
-                });          
+                });     
                 setTimeout(() => {
                     navigate('/');
-                }, 2000);
+                }, 1000);
             } else {
                 toast.error("Error signing you up!", {
                     position: "bottom-right",
