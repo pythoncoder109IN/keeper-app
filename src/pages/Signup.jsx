@@ -50,6 +50,7 @@ function Signup() {
                 });
             }
         } catch (error) {
+            toast.dismiss(toastId);
             console.log("Signup error:", error);
             toast.error("Something went wrong!", {
                 position: "bottom-right",
