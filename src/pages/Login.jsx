@@ -50,6 +50,7 @@ function Login() {
                 });
             }
         } catch (error) {
+            toast.dismiss(toastId);
             console.log("Login error:", error);
             toast.error("Something went wrong!", {
                 position: "bottom-right",
