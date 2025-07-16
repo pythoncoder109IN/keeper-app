@@ -1,85 +1,68 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import NoteArea from "./Note";
-import Button from "@mui/material/Button";
-import LogoutIcon from "@mui/icons-material/Logout";
-import style from "./pages.module.css";
-import Backdrop from "@mui/material/Backdrop";
-import CircularProgress from "@mui/material/CircularProgress";
+import { motion } from 'framer-motion';
+import CreateArea from '../components/CreateArea';
+import NotesGrid from '../components/NotesGrid';
+import { useAuth } from '../context/AuthContext';
+import { useNotes } from '../context/NotesContext';
 
-function Home() {
-  const navigate = useNavigate();
-  const [showNotes, setShowNotes] = useState(false);
-  const [username, setUsername] = useState("");
-
-  useEffect(() => {
-    async function verifyUser() {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          navigate("/login");
-          return;
-        }
-    
-        const { data } = await axios.post(
-          `${import.meta.env.VITE_SERVER_API}/verify`,
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        if (data.success === true) {
-          setUsername(data.username.split("@")[0]);
-          setShowNotes(true);
-        } else {
-          navigate("/login");
-        }
-      } catch (error) {
-        console.error("Error verifying user:", error);
-        navigate("/login");
-      }
-    }
-    verifyUser();
-  }, [navigate]);
-
-  async function logout() {
-    try {
-      setShowNotes(false);
-      localStorage.removeItem("token");
-      navigate("/login");
-    } catch (error) {
-      console.error("Error logging out:", error);
-    }
-  }
+const Home = () => {
+  const { user } = useAuth();
+  const { getStats } = useNotes();
+  const stats = getStats();
 
   return (
-    <div>
-      <div className={style.user}>
-        {username && <p className={style.welcome}>Welcome, {username}</p>}
-        {showNotes ? (
-          <Button
-            variant="outlined"
-            startIcon={<LogoutIcon />}
-            onClick={logout}
-            className={style.btn}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="container mx-auto px-4 py-8"
+    >
+      {/* Welcome Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="text-center mb-8"
+      >
+        <h1 className="text-3xl md:text-4xl font-display font-normal text-gray-800 mb-2">
+          Welcome back, {user?.name}! 👋
+        </h1>
+        <p className="text-gray-600 mb-6">
+          Capture your thoughts, ideas, and memories with rich content
+        </p>
+        
+        {/* Quick Stats */}
+        {stats.total > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex items-center justify-center space-x-6 text-sm text-gray-500 mb-8"
           >
-            Logout
-          </Button>
-        ) : (
-          <Backdrop
-            sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-            open={!showNotes}
-          >
-            <CircularProgress color="inherit" />
-          </Backdrop>
+            <div className="flex items-center space-x-1">
+              <span className="font-medium text-primary-600">{stats.total}</span>
+              <span>notes</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <span className="font-medium text-yellow-600">{stats.favorites}</span>
+              <span>favorites</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <span className="font-medium text-blue-600">{stats.withImages}</span>
+              <span>with images</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <span className="font-medium text-purple-600">{stats.withDrawings}</span>
+              <span>with drawings</span>
+            </div>
+          </motion.div>
         )}
-      </div>
-      {showNotes && <NoteArea />}
-    </div>
+      </motion.div>
+
+      {/* Create Note Area */}
+      <CreateArea />
+
+      {/* Notes Grid */}
+      <NotesGrid />
+    </motion.div>
   );
-}
+};
 
 export default Home;
