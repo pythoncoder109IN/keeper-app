@@ -4,6 +4,11 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  safelist: [
+    'from-blue-50',
+    'via-white',
+    'to-yellow-50'
+  ],
   theme: {
     extend: {
       colors: {
@@ -69,6 +74,6 @@ export default {
     },
   },
   plugins: [
-    require('@tailwindcss/forms'),
+    import('@tailwindcss/forms'),
   ],
 }
