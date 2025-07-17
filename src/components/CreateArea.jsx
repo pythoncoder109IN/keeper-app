@@ -9,11 +9,17 @@ import {
   Type, 
   X,
   Upload,
-  Loader2
+  Loader2,
+  Sparkles,
+  Mic,
+  Camera
 } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import toast from 'react-hot-toast';
 import { useNotes } from '../context/NotesContext';
+import { Button } from './ui/Button';
+import { Input } from './ui/Input';
+import { Card, CardContent } from './ui/Card';
 import DrawingCanvas from './DrawingCanvas';
 
 const CreateArea = () => {
@@ -31,8 +37,8 @@ const CreateArea = () => {
     accept: {
       'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp']
     },
-    maxFiles: 5,
-    maxSize: 5 * 1024 * 1024, // 5MB
+    maxFiles: 10,
+    maxSize: 10 * 1024 * 1024, // 10MB
     onDrop: (acceptedFiles) => {
       const newImages = acceptedFiles.map(file => ({
         file,
@@ -40,12 +46,13 @@ const CreateArea = () => {
         id: Math.random().toString(36).substr(2, 9)
       }));
       setImages(prev => [...prev, ...newImages]);
+      toast.success(`${acceptedFiles.length} image(s) added`);
     },
     onDropRejected: (rejectedFiles) => {
       rejectedFiles.forEach(({ errors }) => {
         errors.forEach(error => {
           if (error.code === 'file-too-large') {
-            toast.error('File is too large. Max size is 5MB.');
+            toast.error('File is too large. Max size is 10MB.');
           } else if (error.code === 'file-invalid-type') {
             toast.error('Invalid file type. Only images are allowed.');
           }
@@ -60,16 +67,18 @@ const CreateArea = () => {
       ['bold', 'italic', 'underline', 'strike'],
       [{ 'color': [] }, { 'background': [] }],
       [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'indent': '-1'}, { 'indent': '+1' }],
       ['blockquote', 'code-block'],
-      ['link'],
+      ['link', 'image'],
+      [{ 'align': [] }],
       ['clean']
     ],
   };
 
   const formats = [
     'header', 'bold', 'italic', 'underline', 'strike',
-    'color', 'background', 'list', 'bullet',
-    'blockquote', 'code-block', 'link'
+    'color', 'background', 'list', 'bullet', 'indent',
+    'blockquote', 'code-block', 'link', 'image', 'align'
   ];
 
   const handleSubmit = async (e) => {
@@ -83,7 +92,7 @@ const CreateArea = () => {
     setIsCreating(true);
 
     try {
-      // Convert images to base64 for storage (in real app, upload to cloud storage)
+      // Convert images to base64 for storage
       const imageData = await Promise.all(
         images.map(async (img) => {
           return new Promise((resolve) => {
@@ -91,7 +100,9 @@ const CreateArea = () => {
             reader.onload = () => resolve({
               id: img.id,
               data: reader.result,
-              name: img.file.name
+              name: img.file.name,
+              size: img.file.size,
+              type: img.file.type
             });
             reader.readAsDataURL(img.file);
           });
@@ -99,17 +110,18 @@ const CreateArea = () => {
       );
 
       const noteData = {
-        title: title.trim() || 'Untitled',
+        title: title.trim() || 'Untitled Note',
         content: content.trim(),
         images: imageData,
         drawing: drawing,
+        tags: [],
         createdAt: new Date().toISOString()
       };
 
       const result = await createNote(noteData);
       
       if (result.success) {
-        toast.success('Note created successfully!');
+        toast.success('Note created successfully! ✨');
         // Reset form
         setTitle('');
         setContent('');
@@ -131,13 +143,13 @@ const CreateArea = () => {
   const removeImage = (imageId) => {
     setImages(prev => {
       const updated = prev.filter(img => img.id !== imageId);
-      // Revoke object URL to prevent memory leaks
       const removed = prev.find(img => img.id === imageId);
       if (removed) {
         URL.revokeObjectURL(removed.preview);
       }
       return updated;
     });
+    toast.success('Image removed');
   };
 
   const saveDrawing = () => {
@@ -146,7 +158,7 @@ const CreateArea = () => {
       const drawingData = canvas.toDataURL();
       setDrawing(drawingData);
       setShowDrawing(false);
-      toast.success('Drawing saved!');
+      toast.success('Drawing saved! 🎨');
     }
   };
 
@@ -155,196 +167,236 @@ const CreateArea = () => {
     toast.success('Drawing removed');
   };
 
+  const handleCancel = () => {
+    setIsExpanded(false);
+    setTitle('');
+    setContent('');
+    setImages([]);
+    setDrawing(null);
+    setShowDrawing(false);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="max-w-4xl mx-auto mb-8"
     >
-      <form onSubmit={handleSubmit} className="create-note">
-        <div className="space-y-4">
-          {/* Title Input */}
-          <input
-            type="text"
-            placeholder="Take a note..."
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onClick={() => setIsExpanded(true)}
-            className="w-full text-lg font-medium placeholder-gray-500 border-none outline-none bg-transparent resize-none"
-          />
+      <Card className="overflow-hidden">
+        <CardContent className="p-0">
+          <form onSubmit={handleSubmit}>
+            {/* Title Input */}
+            <div className="p-6 pb-0">
+              <Input
+                type="text"
+                placeholder="Take a note..."
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onClick={() => setIsExpanded(true)}
+                className="text-lg font-medium border-none shadow-none bg-transparent focus:ring-0 px-0"
+              />
+            </div>
 
-          <AnimatePresence>
-            {isExpanded && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="space-y-4"
-              >
-                {/* Rich Text Editor */}
-                <div className="bg-white rounded-xl overflow-hidden border border-gray-200">
-                  <ReactQuill
-                    theme="snow"
-                    value={content}
-                    onChange={setContent}
-                    modules={modules}
-                    formats={formats}
-                    placeholder="Write your note content..."
-                  />
-                </div>
-
-                {/* Image Upload Area */}
-                <div
-                  {...getRootProps()}
-                  className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200 ${
-                    isDragActive 
-                      ? 'border-primary-500 bg-primary-50' 
-                      : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
-                  }`}
+            <AnimatePresence>
+              {isExpanded && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="space-y-6 p-6 pt-4"
                 >
-                  <input {...getInputProps()} />
-                  <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-600">
-                    {isDragActive 
-                      ? 'Drop images here...' 
-                      : 'Drag & drop images, or click to select'
-                    }
-                  </p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Max 5 images, 5MB each
-                  </p>
-                </div>
-
-                {/* Image Previews */}
-                {images.length > 0 && (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {images.map((image) => (
-                      <motion.div
-                        key={image.id}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="relative group"
-                      >
-                        <img
-                          src={image.preview}
-                          alt="Preview"
-                          className="w-full h-24 object-cover rounded-lg border border-gray-200"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(image.id)}
-                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </motion.div>
-                    ))}
+                  {/* Rich Text Editor */}
+                  <div className="rounded-xl overflow-hidden border border-border">
+                    <ReactQuill
+                      theme="snow"
+                      value={content}
+                      onChange={setContent}
+                      modules={modules}
+                      formats={formats}
+                      placeholder="Write your note content..."
+                      className="bg-background"
+                    />
                   </div>
-                )}
 
-                {/* Drawing Canvas */}
-                <AnimatePresence>
-                  {showDrawing && (
+                  {/* Image Upload Area */}
+                  <div
+                    {...getRootProps()}
+                    className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-300 ${
+                      isDragActive 
+                        ? 'border-primary bg-primary/5 scale-105' 
+                        : 'border-border hover:border-primary/50 hover:bg-muted/30'
+                    }`}
+                  >
+                    <input {...getInputProps()} />
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="space-y-4"
+                      animate={isDragActive ? { scale: 1.1 } : { scale: 1 }}
+                      className="space-y-3"
                     >
-                      <DrawingCanvas ref={drawingRef} />
-                      <div className="flex justify-end space-x-2">
-                        <button
-                          type="button"
-                          onClick={() => setShowDrawing(false)}
-                          className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          onClick={saveDrawing}
-                          className="btn-primary"
-                        >
-                          Save Drawing
-                        </button>
+                      <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                        <Upload className="w-6 h-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-lg font-medium text-foreground">
+                          {isDragActive 
+                            ? 'Drop images here...' 
+                            : 'Drag & drop images, or click to select'
+                          }
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Support for JPEG, PNG, GIF, WebP • Max 10 images, 10MB each
+                        </p>
                       </div>
                     </motion.div>
+                  </div>
+
+                  {/* Image Previews */}
+                  {images.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                      {images.map((image, index) => (
+                        <motion.div
+                          key={image.id}
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: index * 0.1 }}
+                          className="relative group"
+                        >
+                          <div className="aspect-square rounded-lg overflow-hidden bg-muted">
+                            <img
+                              src={image.preview}
+                              alt="Preview"
+                              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            onClick={() => removeImage(image.id)}
+                            className="absolute -top-2 -right-2 w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                          <div className="absolute bottom-1 left-1 right-1 bg-black/50 text-white text-xs px-1 py-0.5 rounded text-center truncate">
+                            {image.file.name}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
                   )}
-                </AnimatePresence>
 
-                {/* Drawing Preview */}
-                {drawing && !showDrawing && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="relative"
-                  >
-                    <img
-                      src={drawing}
-                      alt="Drawing"
-                      className="w-full max-w-md mx-auto rounded-lg border border-gray-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={clearDrawing}
-                      className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors duration-200"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </motion.div>
-                )}
+                  {/* Drawing Canvas */}
+                  <AnimatePresence>
+                    {showDrawing && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="space-y-4"
+                      >
+                        <DrawingCanvas ref={drawingRef} />
+                        <div className="flex justify-end space-x-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setShowDrawing(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={saveDrawing}
+                          >
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Save Drawing
+                          </Button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-                {/* Action Buttons */}
-                <div className="flex items-center justify-between pt-4">
-                  <div className="flex items-center space-x-2">
-                    <motion.button
-                      type="button"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setShowDrawing(!showDrawing)}
-                      className="p-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-all duration-200"
-                      title="Add drawing"
+                  {/* Drawing Preview */}
+                  {drawing && !showDrawing && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="relative group"
                     >
-                      <Palette className="w-5 h-5" />
-                    </motion.button>
+                      <div className="rounded-xl overflow-hidden border border-border">
+                        <img
+                          src={drawing}
+                          alt="Drawing"
+                          className="w-full max-h-64 object-contain bg-white"
+                        />
+                      </div>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        onClick={clearDrawing}
+                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </motion.div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center justify-between pt-4 border-t border-border">
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setShowDrawing(!showDrawing)}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <Palette className="w-5 h-5" />
+                      </Button>
+                      
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <Mic className="w-5 h-5" />
+                      </Button>
+                      
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        <Camera className="w-5 h-5" />
+                      </Button>
+                    </div>
+
+                    <div className="flex items-center space-x-3">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={handleCancel}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={isCreating}
+                        loading={isCreating}
+                        className="min-w-[120px]"
+                      >
+                        {!isCreating && <Plus className="w-4 h-4 mr-2" />}
+                        {isCreating ? 'Creating...' : 'Create Note'}
+                      </Button>
+                    </div>
                   </div>
-
-                  <div className="flex items-center space-x-3">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsExpanded(false);
-                        setTitle('');
-                        setContent('');
-                        setImages([]);
-                        setDrawing(null);
-                        setShowDrawing(false);
-                      }}
-                      className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
-                    >
-                      Cancel
-                    </button>
-                    <motion.button
-                      type="submit"
-                      disabled={isCreating}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="btn-primary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isCreating ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                      ) : (
-                        <Plus className="w-5 h-5" />
-                      )}
-                      <span>{isCreating ? 'Creating...' : 'Create Note'}</span>
-                    </motion.button>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </form>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </form>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 };

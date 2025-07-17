@@ -9,13 +9,21 @@ import {
   LogOut, 
   Search,
   Star,
-  Filter
+  Filter,
+  Settings,
+  Bell,
+  Moon,
+  Sun
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotes } from '../context/NotesContext';
+import { Button } from './ui/Button';
+import { Input } from './ui/Input';
+import { cn } from '../lib/utils';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const { user, logout } = useAuth();
   const { searchTerm, setSearchTerm, filterFavorites, setFilterFavorites } = useNotes();
   const navigate = useNavigate();
@@ -27,133 +35,160 @@ const Header = () => {
     setIsMenuOpen(false);
   };
 
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    document.documentElement.classList.toggle('dark');
+  };
+
   const isHomePage = location.pathname === '/';
 
   return (
     <motion.header 
-      className="bg-gradient-to-r from-primary-500 to-primary-600 shadow-xl sticky top-0 z-40"
+      className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-xl"
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
+      <div className="container-custom">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 group">
             <motion.div
               whileHover={{ rotate: 360 }}
               transition={{ duration: 0.5 }}
+              className="relative"
             >
-              <Highlighter className="w-8 h-8 text-white" />
+              <div className="absolute inset-0 bg-gradient-to-r from-primary to-purple-500 rounded-xl blur opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="relative bg-gradient-to-r from-primary to-purple-500 p-2 rounded-xl">
+                <Highlighter className="w-6 h-6 text-white" />
+              </div>
             </motion.div>
-            <h1 className="text-white font-display text-2xl md:text-3xl font-normal group-hover:text-yellow-200 transition-colors duration-200">
-              Keeper
-            </h1>
+            <div className="hidden sm:block">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-purple-500 to-pink-500 bg-clip-text text-transparent">
+                Keeper
+              </h1>
+              <p className="text-xs text-muted-foreground -mt-1">Your digital memory</p>
+            </div>
           </Link>
 
           {/* Search and Filters - Desktop */}
           {user && isHomePage && (
             <div className="hidden md:flex items-center space-x-4 flex-1 max-w-md mx-8">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5" />
-                <input
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Input
                   type="text"
                   placeholder="Search notes..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-sm"
+                  className="pl-10 bg-background/50"
                 />
               </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <Button
+                variant={filterFavorites ? "default" : "outline"}
+                size="icon"
                 onClick={() => setFilterFavorites(!filterFavorites)}
-                className={`p-2 rounded-xl transition-all duration-200 ${
-                  filterFavorites 
-                    ? 'bg-yellow-400 text-primary-600' 
-                    : 'bg-white/20 text-white hover:bg-white/30'
-                }`}
+                className="shrink-0"
               >
-                <Star className="w-5 h-5" fill={filterFavorites ? 'currentColor' : 'none'} />
-              </motion.button>
+                <Star className="w-4 h-4" fill={filterFavorites ? 'currentColor' : 'none'} />
+              </Button>
             </div>
           )}
 
           {/* Desktop Navigation */}
           {user ? (
-            <div className="hidden md:flex items-center space-x-4">
-              <Link
-                to="/profile"
-                className="flex items-center space-x-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl transition-all duration-200 text-white"
+            <div className="hidden md:flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleDarkMode}
+                className="text-muted-foreground"
               >
-                <User className="w-5 h-5" />
-                <span className="font-medium">{user.name}</span>
+                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </Button>
+              
+              <Button variant="ghost" size="icon" className="text-muted-foreground">
+                <Bell className="w-4 h-4" />
+              </Button>
+
+              <Link to="/profile">
+                <Button variant="ghost" className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-primary to-purple-500 rounded-full flex items-center justify-center">
+                    {user.avatar ? (
+                      <img src={user.avatar} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      <User className="w-4 h-4 text-white" />
+                    )}
+                  </div>
+                  <span className="font-medium">{user.name}</span>
+                </Button>
               </Link>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+
+              <Button
+                variant="outline"
                 onClick={handleLogout}
-                className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-xl transition-all duration-200 text-white"
+                className="flex items-center space-x-2"
               >
-                <LogOut className="w-5 h-5" />
+                <LogOut className="w-4 h-4" />
                 <span>Logout</span>
-              </motion.button>
+              </Button>
             </div>
           ) : (
             <div className="hidden md:flex items-center space-x-4">
-              <Link
-                to="/login"
-                className="px-6 py-2 text-white hover:text-yellow-200 transition-colors duration-200 font-medium"
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleDarkMode}
+                className="text-muted-foreground"
               >
-                Login
+                {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </Button>
+              
+              <Link to="/login">
+                <Button variant="ghost">Login</Button>
               </Link>
-              <Link
-                to="/signup"
-                className="px-6 py-2 bg-white text-primary-600 hover:bg-yellow-100 rounded-xl transition-all duration-200 font-medium"
-              >
-                Sign Up
+              
+              <Link to="/signup">
+                <Button>Sign Up</Button>
               </Link>
             </div>
           )}
 
           {/* Mobile Menu Button */}
-          <motion.button
-            whileTap={{ scale: 0.95 }}
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden p-2 text-white hover:bg-white/20 rounded-xl transition-colors duration-200"
+            className="md:hidden"
           >
-            {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </motion.button>
+            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </Button>
         </div>
 
         {/* Mobile Search - when on home page */}
         {user && isHomePage && (
-          <div className="md:hidden mt-4 space-y-3">
+          <div className="md:hidden pb-4 space-y-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/70 w-5 h-5" />
-              <input
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Input
                 type="text"
                 placeholder="Search notes..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 bg-white/20 border border-white/30 rounded-xl text-white placeholder-white/70 focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-sm"
+                className="pl-10"
               />
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-white/80 text-sm">Filters:</span>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <span className="text-sm text-muted-foreground">Filters:</span>
+              <Button
+                variant={filterFavorites ? "default" : "outline"}
+                size="sm"
                 onClick={() => setFilterFavorites(!filterFavorites)}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-xl transition-all duration-200 ${
-                  filterFavorites 
-                    ? 'bg-yellow-400 text-primary-600' 
-                    : 'bg-white/20 text-white'
-                }`}
+                className="flex items-center space-x-2"
               >
                 <Star className="w-4 h-4" fill={filterFavorites ? 'currentColor' : 'none'} />
-                <span className="text-sm">Favorites</span>
-              </motion.button>
+                <span>Favorites</span>
+              </Button>
             </div>
           </div>
         )}
@@ -166,42 +201,84 @@ const Header = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-primary-600 border-t border-primary-400/20"
+            className="md:hidden border-t bg-background/95 backdrop-blur-xl"
           >
-            <div className="container mx-auto px-4 py-4 space-y-3">
+            <div className="container-custom py-4 space-y-3">
               {user ? (
                 <>
                   <Link
                     to="/profile"
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center space-x-3 p-3 bg-white/20 hover:bg-white/30 rounded-xl transition-all duration-200 text-white"
+                    className="flex items-center space-x-3 p-3 rounded-xl hover:bg-muted/50 transition-colors duration-200"
                   >
-                    <User className="w-5 h-5" />
-                    <span>Profile ({user.name})</span>
+                    <div className="w-10 h-10 bg-gradient-to-r from-primary to-purple-500 rounded-full flex items-center justify-center">
+                      {user.avatar ? (
+                        <img src={user.avatar} alt="Avatar" className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        <User className="w-5 h-5 text-white" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium">{user.name}</p>
+                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                    </div>
                   </Link>
-                  <button
+                  
+                  <div className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors duration-200">
+                    <div className="flex items-center space-x-3">
+                      <Moon className="w-5 h-5 text-muted-foreground" />
+                      <span>Dark Mode</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={toggleDarkMode}
+                    >
+                      {isDarkMode ? 'On' : 'Off'}
+                    </Button>
+                  </div>
+
+                  <Button
+                    variant="outline"
                     onClick={handleLogout}
-                    className="flex items-center space-x-3 p-3 bg-red-500 hover:bg-red-600 rounded-xl transition-all duration-200 text-white w-full"
+                    className="w-full justify-start space-x-3"
                   >
                     <LogOut className="w-5 h-5" />
                     <span>Logout</span>
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <>
+                  <div className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/50 transition-colors duration-200">
+                    <div className="flex items-center space-x-3">
+                      <Moon className="w-5 h-5 text-muted-foreground" />
+                      <span>Dark Mode</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={toggleDarkMode}
+                    >
+                      {isDarkMode ? 'On' : 'Off'}
+                    </Button>
+                  </div>
+                  
                   <Link
                     to="/login"
                     onClick={() => setIsMenuOpen(false)}
-                    className="block p-3 text-white hover:bg-white/20 rounded-xl transition-colors duration-200"
                   >
-                    Login
+                    <Button variant="ghost" className="w-full justify-start">
+                      Login
+                    </Button>
                   </Link>
+                  
                   <Link
                     to="/signup"
                     onClick={() => setIsMenuOpen(false)}
-                    className="block p-3 bg-white text-primary-600 hover:bg-yellow-100 rounded-xl transition-all duration-200 text-center font-medium"
                   >
-                    Sign Up
+                    <Button className="w-full justify-start">
+                      Sign Up
+                    </Button>
                   </Link>
                 </>
               )}
